@@ -19,6 +19,8 @@ namespace SerialGPSGoogleMAPS
         }
 
         string RXmssg = System.String.Empty;
+        string latitude = System.String.Empty;
+        string longitude = System.String.Empty;
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -27,13 +29,8 @@ namespace SerialGPSGoogleMAPS
             {
                 if (!serialPort1.IsOpen)
                 {
-                    tb_serialPort.Text = serialPort1.PortName + " Listo!\r\n";
                     serialPort1.Open();
                     btn_conectar.Enabled = false;
-                }
-                else
-                {
-                    tb_serialPort.Text="ya esta abierto";
                 }
             }
             catch (UnauthorizedAccessException ex)
@@ -45,7 +42,26 @@ namespace SerialGPSGoogleMAPS
 
         private void btn_reset_Click(object sender, EventArgs e)
         {
-            tb_serialPort.Clear();
+            try
+            {
+                StringBuilder tracker = new StringBuilder();
+                tracker.Append("https://www.google.com.mx/maps/place/");
+                if (longitude != string.Empty && latitude != string.Empty)
+                {
+                    tracker.Append(latitude + "," + longitude);
+                    webBrowser1.Navigate(tracker.ToString());
+                }
+                else
+                {
+                    MessageBox.Show("error");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "error");
+                throw;
+            }
+
         }
 
         private void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
@@ -59,31 +75,18 @@ namespace SerialGPSGoogleMAPS
 
         private void desplegar(object sender, EventArgs e)
         {
-            tb_serialPort.AppendText(RXmssg);
             string[] cadena = RXmssg.Split(';');
             int numero = cadena.Length;
-            tb_speed.Text = cadena[4];
-            string latidude = cadena[2];
-            tb_latitud.Text = latidude;
-            string longitude = cadena[3];
-            tb_longitud.Text = longitude;
             try
             {
-                StringBuilder tracker = new StringBuilder();
-                tracker.Append("http://maps.google.com/maps?q=");
-                if (longitude!=string.Empty&&latidude!=string.Empty)
-                {
-                    tracker.Append(latidude+","+longitude);
-                    webBrowser1.Navigate(tracker.ToString());
-                }
-                else
-                {
-                    MessageBox.Show("error");
-                }
+            tb_speed.Text = cadena[4];
+            latitude = cadena[2];
+            tb_latitud.Text = latitude;
+            longitude = cadena[3];
+            tb_longitud.Text = longitude;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show(ex.Message,"error");
                 throw;
             }
         }
